@@ -1,4 +1,4 @@
-var budgetController = (function () {
+/* var budgetController = (function () {
 
     var x = 23;
 
@@ -9,6 +9,33 @@ var budgetController = (function () {
     return {
         publicTest: function (b) {
             return (add(b));
+        }
+    }
+})();
+ */
+
+var budgetController = (function () {
+
+    var Expense = function(id, description, value) { // Function constructors, by convention, start with capitals. 
+        this.id = id;
+        this.description = description;
+        this.value = value;
+    }
+
+    var Income = function(id, description, value) { // Function constructors, by convention, start with capitals. 
+        this.id = id;
+        this.description = description;
+        this.value = value;
+    }
+
+    var data = { // All our data in one neat object.
+        allItems: {
+            exp: [], // Expenses
+            inc: [] // Incomes
+        },
+        totals: {
+            exp: 0,
+            inc: 0
         }
     }
 })();
