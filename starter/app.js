@@ -109,6 +109,23 @@ var UIController = (function () {
 
         },
 
+        clearFields: function() {
+            var fieldsList, fieldsArray;
+
+            fieldsList = document.querySelectorAll(DOMstrings.inputDescription + ", " + DOMstrings.inputValue); // querySelectorAll returns a list.
+
+            // We need to convert our list to an array, to use the Array.forEach method. 
+
+            // Trick: We use Array.slice(), as it returns an array. It's a 
+            fieldsArray = Array.prototype.slice.call(fieldsList);
+
+            fieldsArray.forEach(function(current, index, entireArray) {
+                current.value = "";
+            });
+
+            fieldsArray[0].focus(); // Focuses to the Description field.
+        },
+
         getDOMstrings: function () {
             return DOMstrings;
         }
@@ -150,11 +167,14 @@ var controller = (function (budgetCtrl, UICtrl) {
         // 2. Add item to budget controller. 
         newItem = budgetController.addItem(input.type, input.description, input.value);
         // 3. Add item to UI. 
+        UICtrl.addListFunction(newItem, input.type);
 
-        UICtrl.addListFunction(newItem, input.type)
-        // 4. Calculate budget. 
+        // 4. Clear fields. 
+        UICtrl.clearFields();
 
-        // 5. Displa budget on UI. 
+        // 5. Calculate budget. 
+
+        // 6. Displa budget on UI. 
 
         console.log("WOrking");
     }
