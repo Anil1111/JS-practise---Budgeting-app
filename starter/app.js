@@ -28,6 +28,15 @@ var budgetController = (function () {
         this.value = value;
     }
 
+    var calculateTotal = function(type) {
+        var sum = 0;
+        data.allItems[type].forEach(function(current, index, completeIndex) {
+            sum += current.value;
+        });
+
+        data.totals[type] = sum;
+    }
+
     var data = { // All our data in one neat object.
         allItems: {
             exp: [], // Expenses
@@ -36,7 +45,9 @@ var budgetController = (function () {
         totals: {
             exp: 0,
             inc: 0
-        }
+        },
+        budget: 0,
+        percentage: -1 // -1, as in "it doesn't exist"
     }
 
     return {
@@ -62,6 +73,31 @@ var budgetController = (function () {
             return newItem;
         },
 
+        calculateBudget: function() {
+            // Calculate total income and expenses.
+            calculateTotal("exp");
+            calculateTotal("inc");
+
+            // Calculate the budget: income - expenses. 
+            data.budget = data.totals.inc - data.totals.exp;
+
+            // Calculate the % of income that's been spent. 
+            if (data.totals.inc > 0) { // If the total income is 0, you shouldn't do the division (you can't divide by 0).
+                data.percentage = Math.round(data.totals.exp / data.totals.inc * 100); // Round to the nearest whole number.
+            } else { 
+                data.percentage = -1;
+            }
+        },
+
+        getBudget: function() {
+            return {
+                budget: data.budget,
+                totalInc: data.totals.inc,
+                totalExp: data.totals.exp,
+                percentage: data.percentage
+            }
+        },
+
         testing: function () {
             console.log(data);
         }
@@ -84,7 +120,7 @@ var UIController = (function () {
             return {
                 type: document.querySelector(DOMstrings.inputType).value, // Will be either inc or exp (expenses).
                 description: document.querySelector(DOMstrings.inputDescription).value,
-                value: document.querySelector(DOMstrings.inputValue).value,
+                value: parseFloat(document.querySelector(DOMstrings.inputValue).value),
             }
         },
 
@@ -93,7 +129,7 @@ var UIController = (function () {
 
             if (type === "inc") {
                 element = DOMstrings.incomeContainer;
-                
+
                 html = '<div class="item clearfix" id="income-%id%">            <div class="item__description">%description%</div>            <div class="right clearfix">                <div class="item__value">+ %value%</div>                <div class="item__delete">                    <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>                </div>            </div>        </div>';
             } else if (type === "exp") {
                 element = DOMstrings.expensesContainer;
@@ -109,7 +145,7 @@ var UIController = (function () {
 
         },
 
-        clearFields: function() {
+        clearFields: function () {
             var fieldsList, fieldsArray;
 
             fieldsList = document.querySelectorAll(DOMstrings.inputDescription + ", " + DOMstrings.inputValue); // querySelectorAll returns a list.
@@ -119,7 +155,7 @@ var UIController = (function () {
             // Trick: We use Array.slice(), as it returns an array. It's a 
             fieldsArray = Array.prototype.slice.call(fieldsList);
 
-            fieldsArray.forEach(function(current, index, entireArray) {
+            fieldsArray.forEach(function (current, index, entireArray) {
                 current.value = "";
             });
 
@@ -158,26 +194,39 @@ var controller = (function (budgetCtrl, UICtrl) {
         });
     };
 
+    var updateBudget = function () {
+        // Calculate budget.
+        budgetController.calculateBudget();
+
+        // Return budget. 
+        var budget = budgetController.getBudget();
+
+        console.log(budget);
+        // Display budget in UI.
+
+    }
 
     var ctrlAddItem = function () {
         var input, newItem;
 
         // 1. Get field input data. 
         input = UICtrl.getInput();
-        // 2. Add item to budget controller. 
-        newItem = budgetController.addItem(input.type, input.description, input.value);
-        // 3. Add item to UI. 
-        UICtrl.addListFunction(newItem, input.type);
 
-        // 4. Clear fields. 
-        UICtrl.clearFields();
+        if (input.description !== "" && !isNaN(input.value) && input.value > 0) { // Budget and Value must be filled in.
+            // 2. Add item to budget controller. 
+            newItem = budgetController.addItem(input.type, input.description, input.value);
+            // 3. Add item to UI. 
+            UICtrl.addListFunction(newItem, input.type);
 
-        // 5. Calculate budget. 
+            // 4. Clear fields. 
+            UICtrl.clearFields();
 
-        // 6. Displa budget on UI. 
-
-        console.log("WOrking");
+            // Cauclate and update budget. 
+            updateBudget();
+        }
     }
+
+
 
     return {
         init: function () { // Point of init function: So we can put the code that needs to run once when the program starts, in one place. 
