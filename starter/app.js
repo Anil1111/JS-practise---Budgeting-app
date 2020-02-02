@@ -28,9 +28,9 @@ var budgetController = (function () {
         this.value = value;
     }
 
-    var calculateTotal = function(type) {
+    var calculateTotal = function (type) {
         var sum = 0;
-        data.allItems[type].forEach(function(current, index, completeIndex) {
+        data.allItems[type].forEach(function (current, index, completeIndex) {
             sum += current.value;
         });
 
@@ -73,7 +73,7 @@ var budgetController = (function () {
             return newItem;
         },
 
-        calculateBudget: function() {
+        calculateBudget: function () {
             // Calculate total income and expenses.
             calculateTotal("exp");
             calculateTotal("inc");
@@ -84,12 +84,12 @@ var budgetController = (function () {
             // Calculate the % of income that's been spent. 
             if (data.totals.inc > 0) { // If the total income is 0, you shouldn't do the division (you can't divide by 0).
                 data.percentage = Math.round(data.totals.exp / data.totals.inc * 100); // Round to the nearest whole number.
-            } else { 
+            } else {
                 data.percentage = -1;
             }
         },
 
-        getBudget: function() {
+        getBudget: function () {
             return {
                 budget: data.budget,
                 totalInc: data.totals.inc,
@@ -112,7 +112,11 @@ var UIController = (function () {
         inputValue: ".add__value",
         inputBtn: ".add__btn",
         incomeContainer: ".income__list",
-        expensesContainer: ".expenses__list"
+        expensesContainer: ".expenses__list",
+        budgetLabel: ".budget__value",
+        incomeLabel: ".budget__income--value",
+        expenseLabel: ".budget__expenses--value",
+        percentageLabel: ".budget__expenses--percentage"
     }
 
     return {
@@ -162,6 +166,18 @@ var UIController = (function () {
             fieldsArray[0].focus(); // Focuses to the Description field.
         },
 
+        displayBudget: function (obj) {
+            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
+            document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
+            document.querySelector(DOMstrings.expenseLabel).textContent = obj.totalExp;
+
+            if (obj.percentage > 0) {
+                document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
+            } else {
+                document.querySelector(DOMstrings.percentageLabel).textContent = "---";
+            }
+        },
+
         getDOMstrings: function () {
             return DOMstrings;
         }
@@ -203,6 +219,7 @@ var controller = (function (budgetCtrl, UICtrl) {
 
         console.log(budget);
         // Display budget in UI.
+        UIController.displayBudget(budget);
 
     }
 
@@ -230,6 +247,13 @@ var controller = (function (budgetCtrl, UICtrl) {
 
     return {
         init: function () { // Point of init function: So we can put the code that needs to run once when the program starts, in one place. 
+            console.log("Application started.");
+            UIController.displayBudget({
+                budget: 0,
+                totalInc: 0,
+                totalExp: 0,
+                percentage: -1
+            });
             setupEventListeners();
         }
     }
