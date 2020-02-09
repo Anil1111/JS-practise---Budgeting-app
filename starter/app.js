@@ -168,6 +168,12 @@ var UIController = (function () {
 
         },
 
+        deleteListItem: function(selectorID) {
+            // A bit weird, but you must select the parent, and then removeChild. 
+            var element = document.getElementById(selectorID);
+            element.parentNode.removeChild(element);
+        },
+
         clearFields: function () {
             var fieldsList, fieldsArray;
 
@@ -238,7 +244,6 @@ var controller = (function (budgetCtrl, UICtrl) {
         // Return budget. 
         var budget = budgetController.getBudget();
 
-        console.log(budget);
         // Display budget in UI.
         UIController.displayBudget(budget);
 
@@ -281,8 +286,10 @@ var controller = (function (budgetCtrl, UICtrl) {
             budgetController.deleteItem(type, ID);
 
             // Delete item from UI.
+            UIController.deleteListItem(itemID);
             
             // Update and show new budget.
+            updateBudget();
         }
     }
 
