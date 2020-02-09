@@ -73,6 +73,24 @@ var budgetController = (function () {
             return newItem;
         },
 
+        deleteItem: function(type, id) {
+            var ids, index;
+
+            // We need to get the index of the id in data. Steps:
+            // 1. Get an array ("ids") with the ids. 
+            // 2. From "ids", find the index of our id.
+            var ids = data.allItems[type].map(function(current, index, allArray) {
+                return current.id;
+            });
+            index = ids.indexOf(id);
+
+            console.log(index);
+
+            if (index !== -1) {
+                data.allItems[type].splice(index, 1); // Delete the data.
+            }
+        },
+
         calculateBudget: function () {
             // Calculate total income and expenses.
             calculateTotal("exp");
@@ -257,9 +275,10 @@ var controller = (function (budgetCtrl, UICtrl) {
 
             splitID = itemID.split("-");
             type = splitID[0]; // income (inc) or expense (exp)
-            ID = splitID[1];
+            ID = parseInt(splitID[1]);
 
             // Delete item from data structure. 
+            budgetController.deleteItem(type, ID);
 
             // Delete item from UI.
             
