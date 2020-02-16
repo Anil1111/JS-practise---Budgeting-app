@@ -166,6 +166,27 @@ var UIController = (function () {
         expensesPercLabel: ".item__percentage"
     }
 
+    var formatNumber =  function (num, type) { // Private function, doesn't need to be shared. 
+        var numSplit, int, decimal;
+        // + or - before a number. 
+        // Two decimal places. 
+        // Comma separating the thousands. 
+
+        num = Math.abs(num);
+        num = num.toFixed(2); // Num is now a string.
+
+        numSplit = num.split(".");
+        int = numSplit[0];
+
+        if (int.length > 3) {
+            int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3, 3); // Input 12345, output 12,345.
+        }
+
+        decimal = numSplit[1];
+
+        return (type === "exp" ? "-" : "+") + " " + int + "." + decimal;
+    }
+
     return {
         getInput: function () {
             return {
@@ -181,7 +202,7 @@ var UIController = (function () {
             if (type === "inc") {
                 element = DOMstrings.incomeContainer;
 
-                html = '<div class="item clearfix" id="inc-%id%">            <div class="item__description">%description%</div>            <div class="right clearfix">                <div class="item__value">+ %value%</div>                <div class="item__delete">                    <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>                </div>            </div>        </div>';
+                html = '<div class="item clearfix" id="inc-%id%">            <div class="item__description">%description%</div>            <div class="right clearfix">                <div class="item__value">%value%</div>                <div class="item__delete">                    <button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>                </div>            </div>        </div>';
             } else if (type === "exp") {
                 element = DOMstrings.expensesContainer;
 
@@ -190,7 +211,7 @@ var UIController = (function () {
 
             newHtml = html.replace("%id%", obj.id);
             newHtml = newHtml.replace("%description%", obj.description);
-            newHtml = newHtml.replace("%value%", obj.value);
+            newHtml = newHtml.replace("%value%", formatNumber(obj.value, type));
 
             document.querySelector(element).insertAdjacentHTML("beforeend", newHtml); // Inserts newHtml before the end of element. So will 'insert' at the bottom.
 
@@ -220,9 +241,12 @@ var UIController = (function () {
         },
 
         displayBudget: function (obj) {
-            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
-            document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
-            document.querySelector(DOMstrings.expenseLabel).textContent = obj.totalExp;
+            var type;
+            obj.budget > 0 ? type = "inc" : type = "exp";
+
+            document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+            document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, "inc");
+            document.querySelector(DOMstrings.expenseLabel).textContent = formatNumber(obj.totalExp, "exp");
 
             if (obj.percentage > 0) {
                 document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
