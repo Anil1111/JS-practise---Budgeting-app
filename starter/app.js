@@ -20,13 +20,26 @@ var budgetController = (function () {
         this.id = id;
         this.description = description;
         this.value = value;
-    }
+        this.percentage = -1;
+    };
+
+    Expense.prototype.calcPercentages = function (totalIncome) {
+        if (totalIncome > 0) {
+            this.percentage = Math.round(this.value / totalIncome * 100);
+        } else {
+            this.percentage = -1;
+        }
+    };
+
+    Expense.prototype.getPercentage = function () {
+        return this.percentage;
+    };
 
     var Income = function (id, description, value) { // Function constructors, by convention, start with capitals. 
         this.id = id;
         this.description = description;
         this.value = value;
-    }
+    };
 
     var calculateTotal = function (type) {
         var sum = 0;
@@ -35,7 +48,7 @@ var budgetController = (function () {
         });
 
         data.totals[type] = sum;
-    }
+    };
 
     var data = { // All our data in one neat object.
         allItems: {
@@ -48,7 +61,7 @@ var budgetController = (function () {
         },
         budget: 0,
         percentage: -1 // -1, as in "it doesn't exist"
-    }
+    };
 
     return {
         addItem: function (type, description, value) { // Type is income or expense.
@@ -73,13 +86,13 @@ var budgetController = (function () {
             return newItem;
         },
 
-        deleteItem: function(type, id) {
+        deleteItem: function (type, id) {
             var ids, index;
 
             // We need to get the index of the id in data. Steps:
             // 1. Get an array ("ids") with the ids. 
             // 2. From "ids", find the index of our id.
-            var ids = data.allItems[type].map(function(current, index, allArray) {
+            var ids = data.allItems[type].map(function (current, index, allArray) {
                 return current.id;
             });
             index = ids.indexOf(id);
@@ -107,6 +120,20 @@ var budgetController = (function () {
             }
         },
 
+        calculatePercentages: function () {
+            data.allItems.exp.forEach(function (current) {
+                current.calcPercentages(data.totals.inc);
+            });
+        },
+
+        getPercentages: function () {
+            var allPercentages = data.allItems.exp.map(function (current) {
+                return current.getPercentage();
+            });
+
+            return allPercentages;
+        },
+
         getBudget: function () {
             return {
                 budget: data.budget,
@@ -119,7 +146,7 @@ var budgetController = (function () {
         testing: function () {
             console.log(data);
         }
-    }
+    };
 })();
 
 
@@ -168,7 +195,7 @@ var UIController = (function () {
 
         },
 
-        deleteListItem: function(selectorID) {
+        deleteListItem: function (selectorID) {
             // A bit weird, but you must select the parent, and then removeChild. 
             var element = document.getElementById(selectorID);
             element.parentNode.removeChild(element);
@@ -249,6 +276,17 @@ var controller = (function (budgetCtrl, UICtrl) {
 
     }
 
+    var updatePercentages = function () {
+        // Calculate percentages. 
+        budgetController.calculatePercentages();
+
+        // Read percentages from budget controllers. 
+        var percentages = budgetController.getPercentages();
+
+        // Update UI with new percentages. 
+        console.log(percentages);
+    }
+
     var ctrlAddItem = function () {
         var input, newItem;
 
@@ -266,6 +304,9 @@ var controller = (function (budgetCtrl, UICtrl) {
 
             // Cauclate and update budget. 
             updateBudget();
+
+            // Calculate and update percentages. 
+            updatePercentages();
         }
     }
 
@@ -287,9 +328,12 @@ var controller = (function (budgetCtrl, UICtrl) {
 
             // Delete item from UI.
             UIController.deleteListItem(itemID);
-            
+
             // Update and show new budget.
             updateBudget();
+
+            // Calculate and update percentages. 
+            updatePercentages();
         }
     }
 
