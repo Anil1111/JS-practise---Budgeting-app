@@ -163,7 +163,8 @@ var UIController = (function () {
         expenseLabel: ".budget__expenses--value",
         percentageLabel: ".budget__expenses--percentage",
         container: ".container",
-        expensesPercLabel: ".item__percentage"
+        expensesPercLabel: ".item__percentage",
+        dateLabel: ".budget__title--month"
     }
 
     var formatNumber =  function (num, type) { // Private function, doesn't need to be shared. 
@@ -271,6 +272,18 @@ var UIController = (function () {
                     current.textContent = "---";
                 }
             });
+        },
+
+        displayMonth: function() {
+            var now, year, month, months;
+            
+            now = new Date();
+
+            year = now.getFullYear();
+            
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            month = now.getMonth();
+            document.querySelector(DOMstrings.dateLabel).textContent = months[month] + " " + year;
         },
 
         getDOMstrings: function () {
@@ -383,6 +396,7 @@ var controller = (function (budgetCtrl, UICtrl) {
     return {
         init: function () { // Point of init function: So we can put the code that needs to run once when the program starts, in one place. 
             console.log("Application started.");
+            UIController.displayMonth();
             UIController.displayBudget({
                 budget: 0,
                 totalInc: 0,
